@@ -1,0 +1,22 @@
+[package]
+name = "makepkg"
+version = "0.1.0"
+authors = ["Brilliant PHAL"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = {version = "*", features = ["derive"]}
+serde_yaml = "*"
+lazy_static = "*"
+tokio = {version = "*", features = ["full"]}
+reqwest = "*"
+colored = "*"
+indicatif = "*"
+tar = "*"
+zstd = "*"
+clap = "*"
+error-chain = "*"
+anyhow = "*"
+shellfn = "*"
