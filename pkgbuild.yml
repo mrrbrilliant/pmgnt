@@ -22,6 +22,7 @@ changelog: ~
 source:
   - https://repo.koompi.org/packages/fonts-limon.zip
   - https://repo.koompi.org/packages/exe-thumbnailer-0.10.1-1-any.pkg.tar.xz
+  - git://github.com/koompi/os-pix.git
 noextract: ~
 md5sums: ~
 validpgpkeys: ~

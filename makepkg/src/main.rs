@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 
 pub mod download;
+pub mod git;
 
 use download::download;
 use lazy_static::*;
@@ -62,6 +63,7 @@ fn read_pkgbuild() -> Result<Package, Error> {
         }
     }
 }
+
 #[tokio::main]
 async fn main() {
 
@@ -168,8 +170,20 @@ impl Package {
                 let parsed_url = Url::parse(source).expect("Unable to parse URL");
                 let file_name = &parsed_url.path_segments().unwrap().last().expect("Cannot get file name for URL");
                 let file_path = SRCDIR.join(file_name);
-                self.pull_one(file_name, &file_path.to_str().unwrap().to_string(),  &parsed_url.to_string()).await
+                
 
+                match parsed_url.scheme() {
+                    "git" => {
+                        git::git_clone(parsed_url.to_string().as_ref(), file_path.to_str().unwrap())
+                    },
+                    "http" | "https" => {
+                        println!("{}", &parsed_url.scheme());
+                        self.pull_one(file_name, &file_path.to_str().unwrap().to_string(),  &parsed_url.to_string()).await;
+                    },
+                    _ => {
+                        println!("Unsupported URL")
+                    }
+                }
             }
         }
     }
