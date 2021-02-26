@@ -1,0 +1,32 @@
+---
+pkgname: ""
+pkgver: ""
+pkgrel: 0
+epoch: ~
+pkgdesc: ""
+arch: []
+url: ""
+license: []
+groups: ~
+depends: ~
+makedepends: ~
+checkdepends: ~
+optdepends: ~
+provides: ~
+conflicts: ~
+replaces: ~
+backup: ~
+options: ~
+install: ~
+changelog: ~
+source:
+  - https://repo.koompi.org/packages/fonts-limon.zip
+  - https://repo.koompi.org/packages/exe-thumbnailer-0.10.1-1-any.pkg.tar.xz
+noextract: ~
+md5sums: ~
+validpgpkeys: ~
+prepare: ~
+build: ~
+check: ~
+package:
+  commands: []
