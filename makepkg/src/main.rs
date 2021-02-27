@@ -3,15 +3,21 @@
 pub mod download;
 pub mod git;
 
+use colored::{Color, Colorize};
 use download::download;
 use lazy_static::*;
-use std::{path::{Path, PathBuf}, env, fs::{ self, File}, io::{ self, prelude::*, Error as ioError, ErrorKind}, error::Error};
 use serde::{Deserialize, Serialize};
 use serde_yaml;
-use url::{Url, Position};
 use shellfn::shell;
-use std::str;
-use colored::{Color, Colorize};
+use std::{
+    env,
+    error::Error,
+    fs::{self, File},
+    io::{self, prelude::*, Error as ioError, ErrorKind},
+    path::{Path, PathBuf},
+    str,
+};
+use url::{Position, Url};
 
 lazy_static! {
     // Dirs
@@ -20,6 +26,7 @@ lazy_static! {
     static ref PKGDIR: PathBuf = cwd().join("pkg");
     // Files
     static ref PKGFILE: PathBuf = cwd().join("pkgbuild.yml");
+    static ref SUFFIX: String = String::from(".app");
     // Structs
     #[derive(Debug)]
     static ref PKGDATA: Result<Package, ioError> = read_pkgbuild();
@@ -38,13 +45,11 @@ fn gen_template() -> Result<(), ioError> {
     let file = File::create("pkgbuild.template.yml");
     let pkg: Package = Package::default();
     match file {
-        Ok(f) => {
-            match serde_yaml::to_writer(f, &pkg) {
-                Ok(_) => Ok(()),
-                Err(e) => Err(ioError::new(ErrorKind::Other, e.to_string()))
-            }
+        Ok(f) => match serde_yaml::to_writer(f, &pkg) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(ioError::new(ErrorKind::Other, e.to_string())),
         },
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 
@@ -56,12 +61,16 @@ fn prepare_base(path: PathBuf) {
 
 fn read_pkgbuild() -> Result<Package, ioError> {
     match PKGFILE.exists() {
-        false => Err(ioError::new(ErrorKind::NotFound, "No pkgbuild.yml found in current directory")),
+        false => Err(ioError::new(
+            ErrorKind::NotFound,
+            "No pkgbuild.yml found in current directory",
+        )),
         true => {
-            let file = File::open(PKGFILE.display().to_string()).expect("Unable to read pkgbuild.yml");
+            let file =
+                File::open(PKGFILE.display().to_string()).expect("Unable to read pkgbuild.yml");
             match serde_yaml::from_reader(file) {
                 Err(e) => Err(ioError::new(ErrorKind::Other, e.to_string())),
-                Ok(pkg) => Ok(pkg)
+                Ok(pkg) => Ok(pkg),
             }
         }
     }
@@ -69,7 +78,6 @@ fn read_pkgbuild() -> Result<Package, ioError> {
 
 #[tokio::main]
 async fn main() {
-
     // println!("{}", BASEDIR.display());
     // println!("{}", SRCDIR.display());
     // println!("{}", PKGDIR.display());
@@ -83,17 +91,42 @@ async fn main() {
     prepare_base(PKGDIR.to_path_buf());
     // println!("{:#?}", PKGDATA.as_ref().unwrap());
     println!("{}", "PULLING RESOURCES".green().bold());
-    PKGDATA.as_ref().unwrap().pull_all().await;
-    PKGDATA.as_ref().unwrap().build();
+    // PKGDATA.as_ref().unwrap().pull_all().await;
+    // PKGDATA.as_ref().unwrap().build();
     // PKGDATA.as_ref().unwrap()
     // let file_path= SRCDIR.join("exe-thumbnailer-0.10.1-1-any.pkg.tar.xz");
     // download::download(&file_path.to_str().unwrap(), "exe-thumbnailer", "https://repo.koompi.org/packages/exe-thumbnailer-0.10.1-1-any.pkg.tar.xz").await.unwrap()
-    
-    
+    let archive_name = PKGDATA.as_ref().unwrap().archive_name();
+    let pkgf = File::create(&archive_name).unwrap();
+    let mut tar = tar::Builder::new(pkgf);
+    tar.append_dir_all(".", PKGDIR.to_path_buf()).unwrap();
+    compress(&archive_name).unwrap();
+    fs::remove_file(&archive_name).unwrap();
+}
+
+fn compress(source: &str) -> io::Result<()> {
+    let mut file = fs::File::open(source)?;
+    let mut encoder = {
+        let target = fs::File::create(source.to_string() + &SUFFIX)?;
+        zstd::Encoder::new(target, 1)?
+    };
+
+    io::copy(&mut file, &mut encoder)?;
+    encoder.finish()?;
+
+    Ok(())
 }
 
 #[shell(cmd = "fakeroot sh -c $MODULE")]
-pub fn run(module: &str, basedir: &str, srcdir: &str, pkgdir: &str, pkgname: &str, pkgver: &str, pkgrel: u32) -> Result<String, Box<dyn Error>> {
+pub fn run(
+    module: &str,
+    basedir: &str,
+    srcdir: &str,
+    pkgdir: &str,
+    pkgname: &str,
+    pkgver: &str,
+    pkgrel: u32,
+) -> Result<String, Box<dyn Error>> {
     ""
 }
 
@@ -112,13 +145,14 @@ impl Script {
         // Envronment varialbes
         let basedir = BASEDIR.to_str().unwrap();
         let srcdir = SRCDIR.to_str().unwrap();
-        let pkgdir =  PKGDIR.to_str().unwrap();
+        let pkgdir = PKGDIR.to_str().unwrap();
         let pkgname = &PKGDATA.as_ref().unwrap().pkgname;
         let pkgver = &PKGDATA.as_ref().unwrap().pkgver;
         let pkgrel = PKGDATA.as_ref().unwrap().pkgrel;
 
         // execute commands
-        run(cmd,basedir,srcdir,pkgdir,pkgname,pkgver,pkgrel).map(|output| println!("{}", output))
+        run(cmd, basedir, srcdir, pkgdir, pkgname, pkgver, pkgrel)
+            .map(|output| println!("{}", output))
     }
 }
 
@@ -205,9 +239,9 @@ struct Package {
     pub install: Option<String>,
     pub changelog: Option<String>,
     pub source: Option<Vec<String>>,
-    pub noextract:  Option<Vec<String>>,
+    pub noextract: Option<Vec<String>>,
     pub md5sums: Option<Vec<String>>,
-    pub validpgpkeys:  Option<Vec<String>>,
+    pub validpgpkeys: Option<Vec<String>>,
     pub prepare: Option<Script>,
     pub build: Option<Script>,
     pub check: Option<Script>,
@@ -233,26 +267,35 @@ impl Package {
     }
 
     pub async fn pull_one(&self, app_name: &str, path_name: &str, source_address: &str) {
-
-        download::download(path_name, app_name, source_address).await.unwrap()
+        download::download(path_name, app_name, source_address)
+            .await
+            .unwrap()
     }
 
     pub async fn pull_all(&self) {
         if let Some(sources) = &self.source {
             for source in sources {
                 let parsed_url = Url::parse(source).expect("Unable to parse URL");
-                let file_name = &parsed_url.path_segments().unwrap().last().expect("Cannot get file name for URL");
+                let file_name = &parsed_url
+                    .path_segments()
+                    .unwrap()
+                    .last()
+                    .expect("Cannot get file name for URL");
                 let file_path = SRCDIR.join(file_name);
-                
 
                 match parsed_url.scheme() {
                     "git" => {
                         println!("Cloning {}", &parsed_url.to_string());
                         git::git_clone(parsed_url.to_string().as_ref(), file_path.to_str().unwrap())
-                    },
+                    }
                     "http" | "https" => {
-                        self.pull_one(file_name, &file_path.to_str().unwrap().to_string(),  &parsed_url.to_string()).await;
-                    },
+                        self.pull_one(
+                            file_name,
+                            &file_path.to_str().unwrap().to_string(),
+                            &parsed_url.to_string(),
+                        )
+                        .await;
+                    }
                     _ => {
                         println!("Unsupported URL")
                     }
@@ -261,6 +304,12 @@ impl Package {
         }
     }
 
+    pub fn archive_name(&self) -> String {
+        format!(
+            "{}-{}-{}-{}",
+            self.pkgname, self.pkgver, self.pkgrel, "x86_64"
+        )
+    }
     // pub async fn pack() {
 
     // }
