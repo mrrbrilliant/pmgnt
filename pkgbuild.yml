@@ -1,18 +1,20 @@
 ---
-pkgname: ""
-pkgver: ""
-pkgrel: 0
+pkgname: calamares
+pkgver: 3.2.37
+pkgrel: 1
 epoch: ~
-pkgdesc: ""
-arch: []
-url: ""
-license: []
+pkgdesc: "Linux distro independent system installer"
+arch: ["x86_64"]
+url: "https://github.com/calamares/calamares"
+license:
+  - MIT
 groups: ~
 depends: ~
 makedepends: ~
 checkdepends: ~
 optdepends: ~
-provides: ~
+provides: 
+  - calamares
 conflicts: ~
 replaces: ~
 backup: ~
@@ -20,14 +22,23 @@ options: ~
 install: ~
 changelog: ~
 source:
-  - https://repo.koompi.org/packages/fonts-limon.zip
-  - https://repo.koompi.org/packages/exe-thumbnailer-0.10.1-1-any.pkg.tar.xz
-  - git://github.com/koompi/os-pix.git
-noextract: ~
+  - git://github.com/calamares/calamares
 md5sums: ~
 validpgpkeys: ~
-prepare: ~
-build: ~
-check: ~
+prepare:
+  commands:
+    - mkdir -p ${SRCDIR}/${PKGNAME}/build
+    - cd ${SRCDIR}/${PKGNAME}/build
+    - cmake -DCMAKE_BUILD_TYPE=Release ${SRCDIR}/${PKGNAME}
+build:
+  commands:
+    - cd ${SRCDIR}/${PKGNAME}/build
+    - make -j4
+# check:
+#   commands:
+#     - "echo Check"
+#     - echo ${PKGDIR}
 package:
-  commands: []
+  commands: 
+    - cd ${SRCDIR}/${PKGNAME}/build
+    - make install PREFIX=/usr DESTDIR=${PKGDIR}
