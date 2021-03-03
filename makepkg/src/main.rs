@@ -12,7 +12,7 @@ use shellfn::shell;
 use std::{
     env,
     error::Error,
-    fs::{self, File},
+    fs::{self, File, OpenOptions},
     io::{self, prelude::*, Error as ioError, ErrorKind},
     path::{Path, PathBuf},
     str,
@@ -27,6 +27,7 @@ lazy_static! {
     // Files
     static ref PKGFILE: PathBuf = cwd().join("pkgbuild.yml");
     static ref SUFFIX: String = String::from(".app");
+    static ref DOTFILES: PathBuf = PKGDIR.join(".files");
     // Structs
     #[derive(Debug)]
     static ref PKGDATA: Result<Package, ioError> = read_pkgbuild();
@@ -34,7 +35,7 @@ lazy_static! {
 
 fn cwd() -> PathBuf {
     if cfg!(debug_assertions) {
-        env::current_dir().unwrap().join("work")
+        env::current_dir().unwrap().join("rootfs/tmp")
     } else {
         env::current_dir().unwrap()
     }
@@ -91,11 +92,37 @@ async fn main() {
     prepare_base(PKGDIR.to_path_buf());
     // println!("{:#?}", PKGDATA.as_ref().unwrap());
     println!("{}", "PULLING RESOURCES".green().bold());
-    // PKGDATA.as_ref().unwrap().pull_all().await;
-    // PKGDATA.as_ref().unwrap().build();
+    PKGDATA.as_ref().unwrap().pull_all().await;
+    PKGDATA.as_ref().unwrap().build();
     // PKGDATA.as_ref().unwrap()
     // let file_path= SRCDIR.join("exe-thumbnailer-0.10.1-1-any.pkg.tar.xz");
     // download::download(&file_path.to_str().unwrap(), "exe-thumbnailer", "https://repo.koompi.org/packages/exe-thumbnailer-0.10.1-1-any.pkg.tar.xz").await.unwrap()
+    use walkdir::WalkDir;
+
+    if DOTFILES.exists() {
+        std::fs::remove_file(DOTFILES.to_path_buf()).unwrap()
+    }
+
+    let mut files: Vec<String> = Vec::new();
+
+    for entry in WalkDir::new(PKGDIR.to_path_buf()).min_depth(1) {
+        let entry = entry.unwrap();
+        if entry.metadata().unwrap().is_file() {
+            let buf = entry
+                .path()
+                .display()
+                .to_string()
+                .trim_start_matches(PKGDIR.to_str().unwrap())
+                .to_string();
+            files.push(buf);
+        }
+    }
+    let buffer: String = files.join("\n");
+
+    let mut dotfile = File::create(DOTFILES.to_path_buf()).unwrap();
+    dotfile.write(buffer.as_bytes()).unwrap();
+    dotfile.flush().unwrap();
+
     let archive_name = PKGDATA.as_ref().unwrap().archive_name();
     let pkgf = File::create(&archive_name).unwrap();
     let mut tar = tar::Builder::new(pkgf);
