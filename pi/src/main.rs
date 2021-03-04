@@ -50,7 +50,7 @@ fn main() {
 
     // register installation
 
-    // let filename = Path::new(arg_file.trim_end_matches(SUFFIX.as_str()));
+    let filename = Path::new(arg_file.trim_end_matches(SUFFIX.as_str()));
 
     // let file = File::open(filename).unwrap();
     // let mut a = Archive::new(file);
@@ -127,18 +127,33 @@ fn untar(arg_file: &str, dest: &str) -> std::io::Result<()> {
     let file = File::open(filename).unwrap();
     let mut a = Archive::new(file);
 
+    for file in a.entries().unwrap() {
+        let mut f = file.unwrap();
+        let p: String = f.path().unwrap().clone().to_str().unwrap().to_string();
+        match p.as_str() {
+            ".files" => {
+                f.unpack(LOCAL_DIR.as_path().join(&p)).unwrap();
+            }
+            _ => {
+                f.unpack(Path::new(dest).join(&p)).unwrap();
+            }
+        };
+    }
+
+    Ok(())
+
     // for f in a.entries().unwrap().into_iter() {
     //     // println!("{:?}", f?.path().unwrap().to_str().unwrap());
-    //     match f {
-    //         Ok(fi) => println!("{}", &fi.path().unwrap().to_str().unwrap()),
-    //         Err(e) => println!("{}", &e),
-    //     }
+    //     // match f {
+    //     //     Ok(fi) => println!("{}", &fi.path().unwrap().to_str().unwrap()),
+    //     //     Err(e) => println!("{}", &e),
+    //     // }
     // }
 
-    match a.unpack(dest) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e),
-    }
+    // match a.unpack(dest) {
+    //     Ok(_) => Ok(()),
+    //     Err(e) => Err(e),
+    // }
 }
 
 fn xzstd(source: &str) -> std::io::Result<()> {

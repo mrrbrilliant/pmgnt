@@ -1,2 +1,2 @@
 [workspace]
-members = ["makepkg", "pi"]
+members = ["lib", "makepkg", "pi"]
