@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs::File,
     io::{Error, ErrorKind},
-    path::PathBuf,
 };
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Manifest {

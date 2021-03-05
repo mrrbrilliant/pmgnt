@@ -20,7 +20,7 @@ pub fn extract_archive(arg_file: &str, dest: &str) -> Result<()> {
             let mut f = file?;
             let p: String = f.path()?.clone().to_str().unwrap().to_string();
             match p.as_str() {
-                ".files" => f.unpack(LOCAL_DIR.as_path().join(&p))?,
+                "manifest.yml" => f.unpack(LOCAL_DIR.as_path().join(&p))?,
                 _ => f.unpack(Path::new(dest).join(&p))?,
             };
         }),
