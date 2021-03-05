@@ -1,6 +1,7 @@
 use crate::enums::{Architectures, BuildOptions, Licenses};
 use crate::pkgbuild_statics::*;
 use crate::structs::Script;
+use crate::utils::archive::create_archive;
 use crate::utils::{
     download::{download_git, download_http},
     read_file::read_to_vec_u8,
@@ -15,6 +16,8 @@ use std::{
 };
 use url::Url;
 use walkdir::WalkDir;
+
+use super::Manifest;
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct Package {
@@ -133,8 +136,8 @@ impl Package {
     }
 
     pub fn gen_file_list(&self) -> Vec<String> {
-        if DOTFILES.exists() {
-            std::fs::remove_file(DOTFILES.to_path_buf()).unwrap()
+        if MANIFEST.exists() {
+            std::fs::remove_file(MANIFEST.to_path_buf()).unwrap()
         }
 
         let mut files: Vec<String> = Vec::new();
@@ -159,5 +162,39 @@ impl Package {
         }
 
         files
+    }
+
+    pub fn to_manifest(&self) -> Manifest {
+        Manifest {
+            pkgname: self.pkgname.clone(),
+            pkgver: self.pkgver.clone(),
+            pkgrel: self.pkgrel.clone(),
+            epoch: self.epoch.clone(),
+            pkgdesc: self.pkgdesc.clone(),
+            arch: self.arch.clone(),
+            url: self.url.clone(),
+            license: self.license.clone(),
+            groups: self.groups.clone(),
+            depends: self.depends.clone(),
+            makedepends: self.makedepends.clone(),
+            checkdepends: self.checkdepends.clone(),
+            optdepends: self.optdepends.clone(),
+            provides: self.provides.clone(),
+            conflicts: self.conflicts.clone(),
+            replaces: self.replaces.clone(),
+            backup: self.backup.clone(),
+            options: self.options.clone(),
+            install: self.install.clone(),
+            changelog: self.changelog.clone(),
+            source: self.source.clone(),
+            noextract: self.noextract.clone(),
+            md5sums: self.md5sums.clone(),
+            validpgpkeys: self.validpgpkeys.clone(),
+            files: self.gen_file_list(),
+        }
+    }
+
+    pub fn create_package(&self) {
+        create_archive(&self, PKGDIR.to_path_buf())
     }
 }

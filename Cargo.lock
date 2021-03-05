@@ -92,6 +92,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "builder"
+version = "0.1.0"
+dependencies = [
+ "lib",
+ "tokio",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -716,23 +724,8 @@ dependencies = [
 name = "makepkg"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "clap",
- "colored",
- "error-chain",
- "git2",
- "indicatif",
- "lazy_static",
- "reqwest",
- "serde",
- "serde_yaml",
- "sha2",
- "shellfn",
- "tar",
+ "lib",
  "tokio",
- "url",
- "walkdir",
- "zstd",
 ]
 
 [[package]]

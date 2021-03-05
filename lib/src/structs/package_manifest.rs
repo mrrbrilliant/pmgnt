@@ -1,4 +1,5 @@
 use crate::enums::{Architectures, BuildOptions, Licenses};
+use crate::pkgbuild_statics::MANIFEST;
 use crate::structs::Package;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -6,7 +7,6 @@ use std::{
     io::{Error, ErrorKind},
     path::PathBuf,
 };
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Manifest {
     pub pkgname: String,
@@ -66,7 +66,8 @@ impl Manifest {
             files: pkg.gen_file_list(),
         }
     }
-    pub fn write(&self, f: PathBuf) -> Result<(), std::io::Error> {
+    pub fn write(&self) -> Result<(), std::io::Error> {
+        let f = MANIFEST.to_path_buf();
         let file = File::create(f);
         match file {
             Ok(f) => match serde_yaml::to_writer(f, &self) {

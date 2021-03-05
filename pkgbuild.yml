@@ -7,14 +7,14 @@ pkgdesc: "Linux distro independent system installer"
 arch: ["x86_64"]
 url: "https://github.com/calamares/calamares"
 license:
-  - MIT
+    - MIT
 groups: ~
 depends: ~
 makedepends: ~
 checkdepends: ~
 optdepends: ~
-provides: 
-  - calamares
+provides:
+    - calamares
 conflicts: ~
 replaces: ~
 backup: ~
@@ -22,23 +22,19 @@ options: ~
 install: ~
 changelog: ~
 source:
-  - git://github.com/calamares/calamares
+    - git://github.com/calamares/calamares
 md5sums: ~
 validpgpkeys: ~
 prepare:
-  commands:
-    - mkdir -p ${SRCDIR}/${PKGNAME}/build
-    - cd ${SRCDIR}/${PKGNAME}/build
-    - cmake -DCMAKE_BUILD_TYPE=Release ${SRCDIR}/${PKGNAME}
+    commands:
+        - mkdir -p ${SRCDIR}/${PKGNAME}/build
+        - cd ${SRCDIR}/${PKGNAME}/build
+        - cmake -DCMAKE_BUILD_TYPE=Release ${SRCDIR}/${PKGNAME}
 build:
-  commands:
-    - cd ${SRCDIR}/${PKGNAME}/build
-    - make -j4
-# check:
-#   commands:
-#     - "echo Check"
-#     - echo ${PKGDIR}
+    commands:
+        - cd ${SRCDIR}/${PKGNAME}/build
+        - make -j4
 package:
-  commands: 
-    - cd ${SRCDIR}/${PKGNAME}/build
-    - make install PREFIX=/usr DESTDIR=${PKGDIR}
+    commands:
+        - cd ${SRCDIR}/${PKGNAME}/build
+        - make install PREFIX=/usr DESTDIR=${PKGDIR}

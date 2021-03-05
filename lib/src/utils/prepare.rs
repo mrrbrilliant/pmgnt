@@ -10,3 +10,10 @@ pub fn prepare_base(path: PathBuf) -> Result<()> {
         Ok(())
     }
 }
+
+pub fn prepare_bases(paths: Vec<PathBuf>) -> Result<()> {
+    paths
+        .iter()
+        .for_each(|p| prepare_base(p.to_path_buf().to_owned()).unwrap());
+    Ok(())
+}

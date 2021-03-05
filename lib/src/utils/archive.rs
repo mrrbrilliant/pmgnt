@@ -1,10 +1,11 @@
 use super::compress::compress_zstd;
 use crate::pi_statics::LOCAL_DIR;
 use crate::pkgbuild_statics::*;
+use crate::structs::Package;
 use std::{
     fs::{remove_file, File},
     io::Result,
-    path::Path,
+    path::{Path, PathBuf},
 };
 use tar::Archive;
 
@@ -27,11 +28,11 @@ pub fn extract_archive(arg_file: &str, dest: &str) -> Result<()> {
     }
 }
 
-pub fn create_archive() {
-    let archive_name = PKGDATA.as_ref().unwrap().archive_name();
+pub fn create_archive(data: &Package, path: PathBuf) {
+    let archive_name = data.archive_name();
     let pkgf = File::create(&archive_name).unwrap();
     let mut tar = tar::Builder::new(pkgf);
-    tar.append_dir_all(".", PKGDIR.to_path_buf()).unwrap();
+    tar.append_dir_all(".", path).unwrap();
     compress_zstd(&archive_name).unwrap();
     remove_file(&archive_name).unwrap();
 }

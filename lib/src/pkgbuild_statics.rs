@@ -11,7 +11,7 @@ lazy_static! {
     // Files
     pub static ref PKGFILE: PathBuf = cwd().join("pkgbuild.yml");
     pub static ref SUFFIX: String = String::from(".app");
-    pub static ref DOTFILES: PathBuf = PKGDIR.join(".files");
+    pub static ref MANIFEST: PathBuf = PKGDIR.join("manifest.yml");
     // Structs
     #[derive(Debug)]
     pub static ref PKGDATA: Result<Package, Error> = Package::from(PKGFILE.to_path_buf());
