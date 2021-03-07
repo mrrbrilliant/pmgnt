@@ -3,8 +3,10 @@ use crate::pkgbuild_statics::MANIFEST;
 use crate::structs::Package;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::VecDeque,
     fs::File,
     io::{Error, ErrorKind},
+    path::PathBuf,
 };
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Manifest {
@@ -65,6 +67,14 @@ impl Manifest {
             files: pkg.gen_file_list(),
         }
     }
+
+    pub fn from_file(path: PathBuf) -> Self {
+        let file = File::open(path.as_path()).unwrap();
+        let data: Manifest = serde_yaml::from_reader(file).unwrap();
+
+        data
+    }
+
     pub fn write(&self) -> Result<(), std::io::Error> {
         let f = MANIFEST.to_path_buf();
         let file = File::create(f);
@@ -76,4 +86,10 @@ impl Manifest {
             Err(e) => Err(e),
         }
     }
+
+    // pub fn resolve_deps(&self) -> Vec<String> {
+    //     let mut res: Vec<String> = Vec::new();
+
+    //     for i in self.depends.iter() {}
+    // }
 }

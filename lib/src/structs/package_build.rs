@@ -155,6 +155,7 @@ impl Package {
                     .display()
                     .to_string()
                     .trim_start_matches(PKGDIR.to_str().unwrap())
+                    .trim_start_matches("/")
                     .to_string();
                 buf.push_str(&format!(" {:x}", hasher.finalize()));
                 files.push(buf);

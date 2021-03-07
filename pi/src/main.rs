@@ -1,8 +1,15 @@
+#![allow(unused_imports, dead_code)]
+
 use lib::pi_statics::{CONF_DIR, CONF_FILE, LOCAL_DIR, PI_DIR, ROOT, SYNC_DIR};
 use lib::structs::PiConf;
-use lib::utils::{archive::extract_archive, decompress::decompress_zstd, prepare::prepare_bases};
+use lib::utils::{
+    archive::extract_archive, decompress::decompress_zstd, prepare::prepare_bases,
+    remove::remove_one,
+};
+use solvent::DepGraph;
 use std::{env, fs::File};
-
+use text_diff::{diff, Difference};
+use walkdir::WalkDir;
 fn main() {
     prepare_bases(vec![
         #[cfg(debug_assertions)]
@@ -19,9 +26,81 @@ fn main() {
         serde_yaml::to_writer(&mut file, &PiConf::gen()).unwrap()
     }
 
-    let args: Vec<String> = env::args().collect();
-    let arg_file = &args[1];
-    let dest = ROOT.to_path_buf();
-    decompress_zstd(arg_file).unwrap();
-    extract_archive(arg_file, &dest.to_str().unwrap()).unwrap();
+    // let args: Vec<String> = env::args().collect();
+    // let arg_file = &args[1];
+    // let dest = ROOT.to_path_buf();
+    // decompress_zstd(arg_file).unwrap();
+    // extract_archive(arg_file, &dest.to_str().unwrap()).unwrap();
+    // list_installed();
+    // resolve_dependencies()
+    remove_one(&String::from("calamares")).unwrap();
+}
+
+fn resolve_dependencies() {
+    // Create a new empty DepGraph.
+    let mut depgraph: DepGraph<&str> = DepGraph::new();
+
+    // You can register a dependency like this.  Solvent will automatically create nodes for any
+    // term it has not seen before.  This means 'b' depends on 'd'
+    depgraph.register_dependency("b", "d");
+
+    // You can also register multiple dependencies at once
+    depgraph.register_dependencies("a", vec!["b", "c", "d"]);
+    depgraph.register_dependencies("c", vec!["e"]);
+
+    // Iterate through each dependency of "a".  The dependencies will be returned in an order such
+    // that each output only depends on the previous outputs (or nothing).  The target itself will
+    // be output last.
+    for node in depgraph.dependencies_of(&"a").unwrap() {
+        print!("{} ", node.unwrap());
+    }
+}
+
+fn list_installed() {
+    for entry in WalkDir::new(LOCAL_DIR.as_path())
+        .min_depth(1)
+        .max_depth(1)
+        .sort_by(|a, b| a.file_name().cmp(b.file_name()))
+    {
+        println!(
+            "{}",
+            entry
+                .unwrap()
+                .path()
+                .display()
+                .to_string()
+                .trim_start_matches(LOCAL_DIR.to_str().unwrap())
+                .trim_start_matches("/")
+        )
+    }
+}
+
+fn diff_removed() {
+    let left: Vec<String> = vec![
+        String::from("a"),
+        String::from("b"),
+        String::from("c"),
+        String::from("d"),
+        String::from("e"),
+    ];
+    let mut right: Vec<String> = Vec::with_capacity(left.len());
+
+    right.push(String::from("a"));
+    right.push(String::from("c"));
+    right.push(String::from("d"));
+
+    let mut removed: Vec<String> = Vec::new();
+
+    let rs = right.join("\n");
+    let ls = left.join("\n");
+
+    let res = diff(&ls, &rs, "\n");
+
+    for i in res.1.iter() {
+        match i {
+            Difference::Rem(s) => removed.push(s.clone()),
+            _ => {}
+        }
+    }
+    println!("{:?}", removed);
 }

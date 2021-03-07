@@ -9,3 +9,7 @@ edition = "2018"
 [dependencies]
 lib = {path = "../lib"}
 serde_yaml = "*"
+tar = "*"
+walkdir = "*"
+solvent = "*"
+text-diff = "*"
