@@ -3,7 +3,6 @@ use crate::pkgbuild_statics::MANIFEST;
 use crate::structs::Package;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::VecDeque,
     fs::File,
     io::{Error, ErrorKind},
     path::PathBuf,

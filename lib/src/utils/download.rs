@@ -1,11 +1,16 @@
 use anyhow::anyhow;
-use git2::Repository;
+use git2::{ErrorCode, Repository};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Client};
+use std::fs::remove_dir_all;
 use std::path::Path;
 use tokio::{fs, io::AsyncWriteExt};
 
-pub async fn download_http(file_path: &str, app_name: &str, address: &str) -> Result<(), anyhow::Error> {
+pub async fn download_http(
+    file_path: &str,
+    app_name: &str,
+    address: &str,
+) -> Result<(), anyhow::Error> {
     let client = Client::new();
 
     let total_size = {
@@ -63,6 +68,12 @@ pub async fn download_http(file_path: &str, app_name: &str, address: &str) -> Re
 pub fn download_git(url: &str, clone_to: &str) {
     match Repository::clone(url, clone_to) {
         Ok(repo) => repo,
-        Err(e) => panic!("failed to clone: {}", e),
+        Err(e) => match e.code() {
+            ErrorCode::Exists => {
+                remove_dir_all(clone_to).unwrap();
+                Repository::clone(url, clone_to).unwrap()
+            }
+            _ => panic!("Failed to clone repository"),
+        },
     };
 }

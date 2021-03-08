@@ -8,10 +8,6 @@ pub enum RepoProtocol {
 
 impl Default for RepoProtocol {
     fn default() -> Self {
-        if cfg!(debug_assertions) {
-            Self::Local
-        } else {
-            Self::Remote
-        }
+        Self::Remote
     }
 }

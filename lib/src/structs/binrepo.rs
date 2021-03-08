@@ -14,9 +14,9 @@ impl Default for BinRepo {
             name: String::from("core"),
             protocol: RepoProtocol::default(),
             address: if cfg!(debug_assertions) {
-                format!("http://localhost:3690/x86_64/core",)
+                format!("http://localhost:3690/packages",)
             } else {
-                String::from("https://repo.koompi.org/x86_64/core")
+                String::from("https://store.koompi.org/packages")
             },
         }
     }

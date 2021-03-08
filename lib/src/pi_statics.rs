@@ -1,6 +1,7 @@
 use lazy_static::*;
+use solvent::DepGraph;
+use std::sync::Mutex;
 use std::{env, path::PathBuf};
-
 #[macro_export]
 lazy_static! {
     // Dirs
@@ -15,6 +16,8 @@ lazy_static! {
     pub static ref DB_SUFFIX: String = String::from(".db");
     pub static ref CONF_FILE: PathBuf = CONF_DIR.join("pi.conf");
     pub static ref SUFFIX: String = String::from(".app");
+    // let mut depgraph: DepGraph<&str> = DepGraph::new();
+    pub static ref DEPGRAPH: Mutex<DepGraph<String>> = Mutex::new(DepGraph::new());
 
 }
 
