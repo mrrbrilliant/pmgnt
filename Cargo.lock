@@ -1835,8 +1835,10 @@ dependencies = [
 name = "repo"
 version = "0.1.0"
 dependencies = [
- "actix-files",
- "actix-web",
+ "lib",
+ "serde",
+ "serde_yaml",
+ "tar",
 ]
 
 [[package]]
@@ -2020,6 +2022,14 @@ dependencies = [
  "linked-hash-map",
  "serde",
  "yaml-rust",
+]
+
+[[package]]
+name = "server"
+version = "0.1.0"
+dependencies = [
+ "actix-files",
+ "actix-web",
 ]
 
 [[package]]

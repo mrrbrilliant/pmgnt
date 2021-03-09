@@ -1,4 +1,4 @@
-use crate::pi_statics::{DEPGRAPH, LOCAL_DIR};
+use crate::pi_statics::{DEPGRAPH, LOCAL_DIR, SYNC_DIR};
 use crate::structs::Manifest;
 
 pub fn is_installed(name: &str) -> bool {
