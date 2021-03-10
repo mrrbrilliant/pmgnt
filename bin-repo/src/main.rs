@@ -4,7 +4,7 @@ use lib::utils::{archive::extract_archive, decompress::decompress_zstd};
 use serde_yaml::{from_reader, to_writer};
 use std::{
     env,
-    fs::{create_dir_all, File},
+    fs::{copy, create_dir_all, File},
     io::{Error, ErrorKind, Read},
     path::{Path, PathBuf},
     result::Result,
@@ -30,7 +30,7 @@ fn main() {
             if let Some(rep) = repo {
                 if let Some(pkgs) = packages {
                     let ps: Vec<PathBuf> = pkgs.iter().map(|p| PathBuf::from(p)).collect();
-                    // pkgs.iter().for_each(|p| println!("{}", p))
+
                     add(rep, ps)
                 } else {
                     println!("No packages was given");
@@ -104,6 +104,7 @@ fn opendb(path: &str) -> Result<PackageRepo, Error> {
 
 fn add(db_path: &str, pkg_files: Vec<PathBuf>) {
     let mut db: PackageRepo = opendb(db_path).unwrap();
+
     for pkg_file in pkg_files.iter() {
         let pkg_file_name = pkg_file.to_str().unwrap();
 
@@ -114,10 +115,16 @@ fn add(db_path: &str, pkg_files: Vec<PathBuf>) {
 
         decompress_zstd(pkg_file.to_str().unwrap()).unwrap();
 
-        let mut arch = Archive::new(File::open(file_name).unwrap());
+        let mut arch = Archive::new(File::open(&file_name).unwrap());
         let mut manif = arch.entries().unwrap().skip_while(|entry| {
             entry.as_ref().unwrap().path().unwrap().to_str().unwrap() != "manifest.yml"
         });
+
+        let db_file = PathBuf::from(db_path);
+        let db_dir = db_file.parent().unwrap();
+
+        copy(pkg_file_name, db_dir.join(pkg_file_name)).unwrap();
+
         let mut buf: String = String::new();
         manif
             .nth(0)
@@ -134,17 +141,26 @@ fn add(db_path: &str, pkg_files: Vec<PathBuf>) {
         } else {
             &db.packages.push(data.clone());
         }
+
+        std::fs::remove_file(file_name).unwrap();
     }
     update_db(db_path, &db);
 }
 
 fn remove(db_path: &str, pkg_files: Vec<PathBuf>) {
     let mut db: PackageRepo = opendb(db_path).unwrap();
+    let db_file = PathBuf::from(db_path);
+    let db_dir = db_file.parent().unwrap();
 
     if !pkg_files.is_empty() {
         for pkg in pkg_files.iter() {
-            &db.packages
-                .retain(|m| m.pkgname != pkg.to_str().unwrap().to_string());
+            &db.packages.retain(|m| {
+                if m.pkgname == pkg.to_str().unwrap() {
+                    let file_name = format!("{}.app", m.archive_name());
+                    std::fs::remove_file(db_dir.join(file_name)).unwrap();
+                }
+                m.pkgname != pkg.to_str().unwrap().to_string()
+            });
         }
     }
 
@@ -155,13 +171,12 @@ fn help() {
     print!(
         r#"
 USAGE:
-repo <operation> <repo_name> [packages]
+bin-repo <operation> <repo_name> [packages]
 
 Operations:
     create <repo_name>              generation an empty repo with the given name.
     add <repo_name> [packages]      add the packages to that repo.
     remove <repo_name> [package]    remove the packages to that repo.
-    truncate <repo_name>            remove all packages from the repo.
 "#
     );
 }

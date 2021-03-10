@@ -86,6 +86,12 @@ impl Manifest {
         }
     }
 
+    pub fn archive_name(&self) -> String {
+        format!(
+            "{}-{}-{}-{}",
+            self.pkgname, self.pkgver, self.pkgrel, "x86_64"
+        )
+    }
     // pub fn resolve_deps(&self) -> Vec<String> {
     //     let mut res: Vec<String> = Vec::new();
 

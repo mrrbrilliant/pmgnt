@@ -1,5 +1,5 @@
 [package]
-name = "repo"
+name = "bin-repo"
 version = "0.1.0"
 authors = ["mrrbrilliant <mrrbrilliantwork@gmail.com>"]
 edition = "2018"

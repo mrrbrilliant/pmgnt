@@ -9,7 +9,7 @@ pub struct PackageRepo {
 }
 
 impl PackageRepo {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 }
@@ -22,7 +22,7 @@ pub struct SourceRepo {
 }
 
 impl SourceRepo {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 }
