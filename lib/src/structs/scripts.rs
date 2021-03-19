@@ -1,4 +1,4 @@
-use crate::pkgbuild_statics::*;
+use crate::statics::*;
 use crate::utils::run_script::run;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -16,12 +16,12 @@ impl Script {
         let cmd = &self.commands.join("\n").to_string();
 
         // Envronment varialbes
-        let basedir = BASEDIR.to_str().unwrap();
-        let srcdir = SRCDIR.to_str().unwrap();
-        let pkgdir = PKGDIR.to_str().unwrap();
-        let pkgname = &PKGDATA.as_ref().unwrap().pkgname;
-        let pkgver = &PKGDATA.as_ref().unwrap().pkgver;
-        let pkgrel = PKGDATA.as_ref().unwrap().pkgrel;
+        let basedir = PB_DIR_CWD.to_str().unwrap();
+        let srcdir = PB_DIR_SRC.to_str().unwrap();
+        let pkgdir = PB_DIR_PKG.to_str().unwrap();
+        let pkgname = &DATA_PACKAGE.as_ref().unwrap().pkgname;
+        let pkgver = &DATA_PACKAGE.as_ref().unwrap().pkgver;
+        let pkgrel = DATA_PACKAGE.as_ref().unwrap().pkgrel;
 
         // execute commands
         run(cmd, basedir, srcdir, pkgdir, pkgname, pkgver, pkgrel)

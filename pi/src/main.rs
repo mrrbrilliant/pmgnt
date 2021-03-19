@@ -1,6 +1,6 @@
 #![allow(unused_imports, dead_code)]
 
-use lib::pi_statics::{CONF_DIR, CONF_FILE, LOCAL_DIR, PI_DIR, ROOT, SYNC_DIR};
+use lib::statics::{PM_DIR_CONF, PM_DIR_LIB, PM_DIR_LOCAL, PM_DIR_ROOT, PM_DIR_SYNC, PM_FILE_CONF};
 use lib::structs::PiConf;
 use lib::utils::{
     archive::extract_archive, decompress::decompress_zstd, install::is_installed,
@@ -13,22 +13,22 @@ use walkdir::WalkDir;
 fn main() {
     prepare_bases(vec![
         #[cfg(debug_assertions)]
-        ROOT.to_path_buf(),
-        PI_DIR.to_path_buf(),
-        LOCAL_DIR.to_path_buf(),
-        SYNC_DIR.to_path_buf(),
-        CONF_DIR.to_path_buf(),
+        PM_DIR_ROOT.to_path_buf(),
+        PM_DIR_LIB.to_path_buf(),
+        PM_DIR_LOCAL.to_path_buf(),
+        PM_DIR_SYNC.to_path_buf(),
+        PM_DIR_CONF.to_path_buf(),
     ])
     .unwrap();
 
-    if !CONF_FILE.as_path().exists() {
-        let mut file = File::create(CONF_FILE.as_path()).unwrap();
+    if !PM_FILE_CONF.as_path().exists() {
+        let mut file = File::create(PM_FILE_CONF.as_path()).unwrap();
         serde_yaml::to_writer(&mut file, &PiConf::gen()).unwrap()
     }
 
     let args: Vec<String> = env::args().collect();
     let arg_file = &args[1..];
-    let dest = ROOT.to_path_buf();
+    let dest = PM_DIR_ROOT.to_path_buf();
 
     decompress_zstd(arg_file).unwrap();
     extract_archive(arg_file, &dest.to_str().unwrap()).unwrap();
@@ -39,7 +39,7 @@ fn main() {
 }
 
 // fn list_installed() {
-//     for entry in WalkDir::new(LOCAL_DIR.as_path())
+//     for entry in WalkDir::new(PM_DIR_LOCAL.as_path())
 //         .min_depth(1)
 //         .max_depth(1)
 //         .sort_by(|a, b| a.file_name().cmp(b.file_name()))
@@ -51,7 +51,7 @@ fn main() {
 //                 .path()
 //                 .display()
 //                 .to_string()
-//                 .trim_start_matches(LOCAL_DIR.to_str().unwrap())
+//                 .trim_start_matches(PM_DIR_LOCAL.to_str().unwrap())
 //                 .trim_start_matches("/")
 //         )
 //     }

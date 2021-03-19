@@ -1,5 +1,9 @@
 use crate::structs::{Manifest, Package};
 use serde::{Deserialize, Serialize};
+use serde_yaml::from_reader;
+use std::fs::File;
+
+use super::BinRepo;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct PackageRepo {
@@ -11,6 +15,12 @@ pub struct PackageRepo {
 impl PackageRepo {
     pub fn new() -> Self {
         Self::default()
+    }
+    pub fn from_file(path: &str) -> Self {
+        let file = File::open(path).unwrap();
+
+        let data: PackageRepo = from_reader(file).unwrap();
+        data
     }
 }
 
@@ -24,5 +34,12 @@ pub struct SourceRepo {
 impl SourceRepo {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn from_file(path: &str) -> Self {
+        let file = File::open(path).unwrap();
+
+        let data: SourceRepo = from_reader(file).unwrap();
+        data
     }
 }

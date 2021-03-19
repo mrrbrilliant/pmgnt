@@ -1,4 +1,4 @@
-use crate::pkgbuild_statics::*;
+use crate::statics::*;
 use std::{
     fs::File,
     io::{copy, Result},
@@ -7,7 +7,7 @@ use std::{
 pub fn compress_zstd(source: &str) -> Result<()> {
     let mut file = File::open(source)?;
     let mut encoder = {
-        let target = File::create(source.to_string() + &SUFFIX)?;
+        let target = File::create(source.to_string() + &SUFFIX_APP)?;
         zstd::Encoder::new(target, 1)?
     };
 

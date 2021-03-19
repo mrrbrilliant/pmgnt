@@ -5,3 +5,5 @@ calamares*
 /builder
 /installer
 /static
+/pm
+# **/pkgbuilds*/

@@ -10,7 +10,7 @@ edition = "2018"
 serde = {version = "*", features = ["derive"]}
 serde_yaml = "*"
 lazy_static = "*"
-tokio = {version = "*", features = ["full"]}
+tokio = {version = "1.2", features = ["full"]}
 reqwest = "*"
 colored = "*"
 indicatif = "*"

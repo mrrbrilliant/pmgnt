@@ -1,5 +1,5 @@
 use crate::enums::{Architectures, BuildOptions, Licenses};
-use crate::pkgbuild_statics::MANIFEST;
+use crate::statics::PM_FILE_MANI;
 use crate::structs::Package;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -67,15 +67,17 @@ impl Manifest {
         }
     }
 
-    pub fn from_file(path: PathBuf) -> Self {
+    pub fn from_file(path: PathBuf) -> Result<Self, Error> {
         let file = File::open(path.as_path()).unwrap();
-        let data: Manifest = serde_yaml::from_reader(file).unwrap();
 
-        data
+        match serde_yaml::from_reader(file) {
+            Ok(d) => Ok(d),
+            Err(e) => Err(Error::new(ErrorKind::Other, e.to_string())),
+        }
     }
 
     pub fn write(&self) -> Result<(), std::io::Error> {
-        let f = MANIFEST.to_path_buf();
+        let f = PM_FILE_MANI.to_path_buf();
         let file = File::create(f);
         match file {
             Ok(f) => match serde_yaml::to_writer(f, &self) {

@@ -1,4 +1,4 @@
-use lib::pi_statics::SUFFIX;
+use lib::statics::SUFFIX_APP;
 use lib::structs::{Manifest, PackageRepo};
 use lib::utils::{archive::extract_archive, decompress::decompress_zstd};
 use serde_yaml::{from_reader, to_writer};
@@ -110,7 +110,7 @@ fn add(db_path: &str, pkg_files: Vec<PathBuf>) {
 
         let file_name: String = pkg_file_name
             .to_string()
-            .trim_end_matches(SUFFIX.as_str())
+            .trim_end_matches(SUFFIX_APP.as_str())
             .to_string();
 
         decompress_zstd(pkg_file.to_str().unwrap()).unwrap();

@@ -1,10 +1,10 @@
-use crate::pi_statics::{DEPGRAPH, LOCAL_DIR, SYNC_DIR};
+use crate::statics::{DEPGRAPH, PM_DIR_LOCAL, PM_DIR_SYNC};
 use crate::structs::Manifest;
 
 pub fn is_installed(name: &str) -> bool {
-    let file_path = LOCAL_DIR.join(name).join("manifest.yml");
+    let file_path = PM_DIR_LOCAL.join(name).join("manifest.yml");
     if file_path.exists() {
-        let pkg = Manifest::from_file(file_path);
+        let pkg = Manifest::from_file(file_path).unwrap();
         if pkg.pkgname == name {
             true
         } else {
@@ -16,9 +16,9 @@ pub fn is_installed(name: &str) -> bool {
 }
 
 pub fn register_deps(name: &str) {
-    let file_path = SYNC_DIR.join(name).join("db.yml");
+    let file_path = PM_DIR_SYNC.join(name).join("db.yml");
 
-    let pkg = Manifest::from_file(file_path);
+    let pkg = Manifest::from_file(file_path).unwrap();
 
     if let Some(deps) = pkg.depends {
         for dep in deps.iter() {
@@ -53,7 +53,7 @@ pub fn install_list(names: Vec<String>) -> Vec<String> {
 }
 
 // pub fn resolve_deps(name: &str) -> Vec<String> {
-// let file_path = LOCAL_DIR.join(name).join("manifest.yml");
+// let file_path = PM_DIR_LOCAL.join(name).join("manifest.yml");
 
 // let pkg = Manifest::from_file(file_path);
 

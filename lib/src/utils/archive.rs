@@ -1,6 +1,6 @@
 use super::compress::compress_zstd;
-use crate::pi_statics::LOCAL_DIR;
-use crate::pkgbuild_statics::*;
+use crate::statics::PM_DIR_LOCAL;
+use crate::statics::*;
 use crate::structs::{Manifest, Package};
 use crate::utils::prepare::prepare_base;
 use std::{
@@ -11,7 +11,7 @@ use std::{
 use tar::Archive;
 
 pub fn extract_archive(arg_file: &str, dest: &str) -> Result<()> {
-    let filename = Path::new(arg_file.trim_end_matches(SUFFIX.as_str()));
+    let filename = Path::new(arg_file.trim_end_matches(SUFFIX_APP.as_str()));
 
     let file = File::open(filename)?;
     let mut a = Archive::new(file);
@@ -25,7 +25,7 @@ pub fn extract_archive(arg_file: &str, dest: &str) -> Result<()> {
                     let mut buf: String = String::new();
                     f.read_to_string(&mut buf).unwrap();
                     let manifest: Manifest = serde_yaml::from_str(&buf).unwrap();
-                    let destname = LOCAL_DIR.join(&manifest.pkgname);
+                    let destname = PM_DIR_LOCAL.join(&manifest.pkgname);
                     prepare_base(destname.clone()).unwrap();
                     serde_yaml::to_writer(File::create(destname.join(&p)).unwrap(), &manifest)
                         .unwrap();

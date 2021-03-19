@@ -1,4 +1,4 @@
-use crate::pkgbuild_statics::*;
+use crate::statics::*;
 use std::{
     fs::File,
     io::{copy, Result},
@@ -12,7 +12,7 @@ pub fn decompress_zstd(source: &str) -> Result<()> {
         Decoder::new(file)?
     };
 
-    let mut target = File::create(source.trim_end_matches(SUFFIX.as_str()))?;
+    let mut target = File::create(source.trim_end_matches(SUFFIX_APP.as_str()))?;
 
     copy(&mut decoder, &mut target)?;
 

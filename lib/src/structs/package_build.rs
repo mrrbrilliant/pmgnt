@@ -1,5 +1,5 @@
 use crate::enums::{Architectures, BuildOptions, Licenses};
-use crate::pkgbuild_statics::*;
+use crate::statics::*;
 use crate::structs::Script;
 use crate::utils::archive::create_archive;
 use crate::utils::{
@@ -56,19 +56,33 @@ impl Package {
         Self::default()
     }
 
-    pub fn from(path: PathBuf) -> Result<Self, Error> {
+    pub fn from_file(path: PathBuf) -> Result<Self, Error> {
         match path.exists() {
             false => Err(Error::new(
                 ErrorKind::NotFound,
                 "No pkgbuild.yml found in current directory",
             )),
             true => {
-                let file =
-                    File::open(PKGFILE.display().to_string()).expect("Unable to read pkgbuild.yml");
+                let file = File::open(PB_FILE_PKG.display().to_string())
+                    .expect("Unable to read pkgbuild.yml");
                 match serde_yaml::from_reader(file) {
                     Err(e) => Err(Error::new(ErrorKind::Other, e.to_string())),
                     Ok(pkg) => Ok(pkg),
                 }
+            }
+        }
+    }
+
+    pub fn from(&mut self, path: PathBuf) {
+        let data = Self::from_file(path).unwrap();
+        *self = data;
+    }
+
+    pub fn check_makedepends(&self) {
+        if let Some(deps) = &self.makedepends {
+            if !deps.is_empty() {
+                // Check is make deps installed
+                println!("{:?}", deps);
             }
         }
     }
@@ -105,7 +119,7 @@ impl Package {
                     .unwrap()
                     .last()
                     .expect("Cannot get file name for URL");
-                let file_path = SRCDIR.join(file_name);
+                let file_path = PB_DIR_SRC.join(file_name);
 
                 match parsed_url.scheme() {
                     "git" => {
@@ -136,13 +150,13 @@ impl Package {
     }
 
     pub fn gen_file_list(&self) -> Vec<String> {
-        if MANIFEST.exists() {
-            std::fs::remove_file(MANIFEST.to_path_buf()).unwrap()
+        if PM_FILE_MANI.exists() {
+            std::fs::remove_file(PM_FILE_MANI.to_path_buf()).unwrap()
         }
 
         let mut files: Vec<String> = Vec::new();
 
-        for entry in WalkDir::new(PKGDIR.to_path_buf()).min_depth(1) {
+        for entry in WalkDir::new(PB_DIR_PKG.to_path_buf()).min_depth(1) {
             let entry = entry.unwrap();
             if entry.metadata().unwrap().is_file() {
                 let shahash = read_to_vec_u8(&entry.path());
@@ -154,7 +168,7 @@ impl Package {
                     .path()
                     .display()
                     .to_string()
-                    .trim_start_matches(PKGDIR.to_str().unwrap())
+                    .trim_start_matches(PB_DIR_PKG.to_str().unwrap())
                     .trim_start_matches("/")
                     .to_string();
                 buf.push_str(&format!(" {:x}", hasher.finalize()));
@@ -196,6 +210,6 @@ impl Package {
     }
 
     pub fn create_package(&self) {
-        create_archive(&self, PKGDIR.to_path_buf())
+        create_archive(&self, PB_DIR_PKG.to_path_buf())
     }
 }
